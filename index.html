@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReX Menu UI</title>
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent-color: 255, 0, 0; /* Default Red */
+            --bg-main: #0b0c13;
+            --bg-card: rgba(18, 20, 32, 0.65);
+            --bg-item: rgba(255, 255, 255, 0.03);
+            --bg-item-hover: rgba(255, 255, 255, 0.07);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-main: #ffffff;
+            --text-muted: #8b8e9f;
+            --success-color: #00ff87;
+            --error-color: #ff3e3e;
+            --info-color: #00bfff;
+            --warning-color: #ffaa00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            outline: none;
+            -webkit-user-drag: none;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: transparent;
+            color: var(--text-main);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding-left: 50px;
+        }
+
+        /* --- WATERMARK & PLAYER INFO --- */
+        #watermark {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: fadeInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 3px solid rgb(var(--accent-color));
+        }
+
+        #watermark .title {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgb(var(--accent-color));
+        }
+
+        #watermark .user-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 10px;
+        }
+
+        #watermark .user-info span {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* --- MAIN MENU CONTAINER --- */
+        #menu-container {
+            width: 380px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), 
+                        0 0 40px rgba(var(--accent-color), 0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+            border-top: 4px solid rgb(var(--accent-color));
+        }
+
+        #menu-container.active {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Top Header Banner */
+        .menu-header {
+            position: relative;
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('https://files.catbox.moe/dhxvdu.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+
+        .menu-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .menu-header p {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-weight: 500;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.5);
+        }
+
+        /* Navigation Path bar */
+        .navigation-path {
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .navigation-path span.active-path {
+            color: rgb(var(--accent-color));
+        }
+
+        /* Menu Elements / Scroll Area */
+        .menu-elements {
+            padding: 16px;
+            max-height: 420px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Custom Scrollbar */
+        .menu-elements::-webkit-scrollbar {
+            width: 4px;
+        }
+        .menu-elements::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .menu-elements::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        /* Menu Item Styling */
+        .menu-item {
+            background: var(--bg-item);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item .label-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .menu-item .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .menu-item .description {
+            font-size: 10px;
+            color: var(--text-muted);
+            max-width: 260px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Hover & Focus states */
+        .menu-item.hovered {
+            background: var(--bg-item-hover);
+            border-color: rgba(var(--accent-color), 0.4);
+            transform: translateX(4px);
+            box-shadow: 0 0 15px rgba(var(--accent-color), 0.05);
+        }
+
+        .menu-item.hovered::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: rgb(var(--accent-color));
+        }
+
+        /* Badges / Values on the right */
+        .menu-item .value-badge {
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255,255,255,0.06);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .menu-item.hovered .value-badge {
+            background: rgba(var(--accent-color), 0.15);
+            border-color: rgba(var(--accent-color), 0.3);
+            color: rgb(var(--accent-color));
+        }
+
+        /* Checkbox item types */
+        .menu-item .checkbox-ui {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .menu-item.checked .checkbox-ui {
+            background: rgb(var(--accent-color));
+            border-color: rgb(var(--accent-color));
+        }
+
+        .menu-item.checked .checkbox-ui::after {
+            content: '';
+            width: 5px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-bottom: 2px;
+        }
+
+        /* Divider Item Styling */
+        .menu-divider {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgb(var(--accent-color));
+            margin-top: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        /* Keybind list footer overlay */
+        .keybind-list {
+            position: absolute;
+            bottom: 20px;
+            left: 450px;
+            width: 260px;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .keybind-list.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .keybind-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgb(var(--accent-color));
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .keybind-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+
+        .keybind-row .key-val {
+            color: rgb(var(--accent-color));
+            font-weight: 700;
+        }
+
+        /* --- NOTIFICATION TOAST CONTAINER --- */
+        #notification-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: var(--bg-card);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: auto;
+        }
+
+        .notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .notification.success::before { background: var(--success-color); }
+        .notification.error::before { background: var(--error-color); }
+        .notification.info::before { background: var(--info-color); }
+        .notification.warning::before { background: var(--warning-color); }
+
+        .notification .notif-title {
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification.success .notif-title { color: var(--success-color); }
+        .notification.error .notif-title { color: var(--error-color); }
+        .notification.info .notif-title { color: var(--info-color); }
+        .notification.warning .notif-title { color: var(--warning-color); }
+
+        .notification .notif-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Notification Countdown progress bar */
+        .notification .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            width: 100%;
+            transform-origin: left;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .notification.success .progress-bar { background: var(--success-color); }
+        .notification.error .progress-bar { background: var(--error-color); }
+        .notification.info .progress-bar { background: var(--info-color); }
+        .notification.warning .progress-bar { background: var(--warning-color); }
+
+        /* Keyframe Animations */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NOTIFICATION CONTAINER -->
+    <div id="notification-container"></div>
+
+    <!-- WATERMARK -->
+    <div id="watermark">
+        <div class="title">ReX Internal</div>
+        <div class="user-info">
+            Rank: <span id="user-rank">User</span>
+            Discord: <span id="discord-name">Unknown</span>
+            Expire: <span id="expire-date">N/A</span>
+        </div>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="menu-container" class="active">
+        <div class="menu-header" id="menu-banner">
+            <h1 id="menu-title">ReX Internal</h1>
+            <p id="menu-subtitle">Clean Executor UI Shell</p>
+        </div>
+        <div class="navigation-path" id="nav-path">
+            ReX &gt; <span class="active-path" id="active-tab-path">Self</span>
+        </div>
+        <div class="menu-elements" id="menu-items-area">
+            <!-- Dynamically populated via JS -->
+        </div>
+    </div>
+
+    <!-- KEYBIND OVERLAY -->
+    <div id="keybind-overlay" class="keybind-list">
+        <div class="keybind-title">Active Keybinds</div>
+        <div id="keybinds-area">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <script>
+        // Store currently rendered elements
+        let currentItems = [];
+        let accentRGB = "255, 0, 0";
+
+        // DOM elements
+        const menuContainer = document.getElementById('menu-container');
+        const menuItemsArea = document.getElementById('menu-items-area');
+        const activeTabPath = document.getElementById('active-tab-path');
+        const menuBanner = document.getElementById('menu-banner');
+        
+        const userRank = document.getElementById('user-rank');
+        const discordName = document.getElementById('discord-name');
+        const expireDate = document.getElementById('expire-date');
+
+        const keybindOverlay = document.getElementById('keybind-overlay');
+        const keybindsArea = document.getElementById('keybinds-area');
+
+        // Update elements in the menu area
+        function updateElements(elements, pathStr, hoveredIdx) {
+            menuItemsArea.innerHTML = '';
+            currentItems = elements || [];
+            
+            if (pathStr) {
+                activeTabPath.innerText = pathStr;
+            }
+
+            currentItems.forEach((item, index) => {
+                if (item.type === 'divider') {
+                    const div = document.createElement('div');
+                    div.className = 'menu-divider';
+                    div.innerText = item.label;
+                    menuItemsArea.appendChild(div);
+                    return;
+                }
+
+                const div = document.createElement('div');
+                div.className = `menu-item ${index === hoveredIdx ? 'hovered' : ''} ${item.checked ? 'checked' : ''}`;
+                
+                let badgeOrTypeHtml = '';
+                if (item.type === 'checkbox' || item.type === 'scrollable-checkbox' || item.type === 'slider-checkbox') {
+                    badgeOrTypeHtml = `<div class="checkbox-ui"></div>`;
+                } else if (item.value !== undefined) {
+                    badgeOrTypeHtml = `<div class="value-badge">${item.value}</div>`;
+                } else if (item.type === 'subMenu') {
+                    badgeOrTypeHtml = `<div class="value-badge">&gt;&gt;</div>`;
+                }
+
+                div.innerHTML = `
+                    <div class="label-group">
+                        <div class="title">${item.label || ''}</div>
+                        ${item.desc ? `<div class="description">${item.desc}</div>` : ''}
+                    </div>
+                    ${badgeOrTypeHtml}
+                `;
+
+                menuItemsArea.appendChild(div);
+            });
+
+            // Auto-scroll to hovered item
+            const hoveredEl = menuItemsArea.querySelector('.menu-item.hovered');
+            if (hoveredEl) {
+                hoveredEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+
+        // Add dynamically animated notification toast
+        function addNotification(type, title, desc, duration) {
+            const container = document.getElementById('notification-container');
+            const notif = document.createElement('div');
+            notif.className = `notification ${type || 'info'}`;
+            
+            // Set notification HTML
+            notif.innerHTML = `
+                <div class="notif-title">${title || 'ReX'}</div>
+                <div class="notif-desc">${desc || ''}</div>
+                <div class="progress-bar"></div>
+            `;
+            
+            container.appendChild(notif);
+
+            const progressBar = notif.querySelector('.progress-bar');
+            duration = duration || 3000;
+
+            // Animate progress bar shrinking
+            progressBar.style.transition = `transform ${duration}ms linear`;
+            progressBar.style.transform = 'scaleX(0)';
+
+            // Auto-remove notification
+            setTimeout(() => {
+                notif.style.animation = 'fadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                setTimeout(() => {
+                    notif.remove();
+                }, 300);
+            }, duration);
+        }
+
+        // Set watermark player info
+        function setPlayerId(id) {
+            if (id) {
+                const parts = id.split(' | ');
+                if (parts.length > 1) {
+                    userRank.innerText = parts[0];
+                    discordName.innerText = parts[1];
+                } else {
+                    discordName.innerText = id;
+                }
+            }
+        }
+
+        function setExpire(date) {
+            if (date) expireDate.innerText = date;
+        }
+
+        // Set header banner URL
+        function updateBanner(colorHex, linkUrl) {
+            if (linkUrl) {
+                menuBanner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('${linkUrl}')`;
+            }
+        }
+
+        // Update Theme Accent Color
+        function updateAccentColor(colorStr) {
+            if (colorStr) {
+                accentRGB = colorStr;
+                document.documentElement.style.setProperty('--accent-color', colorStr);
+            }
+        }
+
+        // Update keybind overlays
+        function updateKeybinds(binds) {
+            keybindsArea.innerHTML = '';
+            if (binds && binds.length > 0) {
+                keybindOverlay.classList.add('active');
+                binds.forEach(bind => {
+                    const row = document.createElement('div');
+                    row.className = 'keybind-row';
+                    row.innerHTML = `<span>${bind.name}</span><span class="key-val">${bind.key}</span>`;
+                    keybindsArea.appendChild(row);
+                });
+            } else {
+                keybindOverlay.classList.remove('active');
+            }
+        }
+
+        // Listen for messages from DUI/Lua SendMessage
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+            if (!data) return;
+
+            switch(data.action) {
+                case 'showMenu':
+                    menuContainer.classList.add('active');
+                    break;
+                case 'hideMenu':
+                    menuContainer.classList.remove('active');
+                    break;
+                case 'updateElements':
+                    updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
+                    break;
+                case 'showNotification':
+                    addNotification(data.type, data.title, data.desc, data.duration);
+                    break;
+                case 'setPlayerId':
+                    setPlayerId(data.id);
+                    break;
+                case 'setExpire':
+                    setExpire(data.date);
+                    break;
+                case 'updateColor':
+                case 'setTheme':
+                    updateAccentColor(data.color);
+                    break;
+                case 'updateBanner':
+                    updateBanner(data.bannerColor, data.bannerLink);
+                    break;
+                case 'showKeybinds':
+                    updateKeybinds(data.binds);
+                    break;
+                case 'hideKeybinds':
+                    keybindOverlay.classList.remove('active');
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
