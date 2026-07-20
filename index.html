@@ -12,7 +12,7 @@
         :root {
             --accent-color: 255, 0, 0; /* Default Red */
             --bg-main: #0b0c13;
-            --bg-card: rgba(18, 20, 32, 0.88);
+            --bg-card: rgba(18, 20, 32, 0.95);
             --bg-item: rgba(255, 255, 255, 0.03);
             --bg-item-hover: rgba(255, 255, 255, 0.07);
             --border-color: rgba(255, 255, 255, 0.06);
@@ -180,45 +180,73 @@
 
         /* Menu Item Styling */
         .menu-item {
-            background: var(--bg-item);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 13px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
         }
 
         .menu-item .label-group {
             display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-item .label-text-wrapper {
+            display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
         }
 
         .menu-item .title {
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-main);
+            color: rgba(255, 255, 255, 0.85);
+            transition: color 0.2s ease;
         }
 
         .menu-item .description {
             font-size: 10px;
             color: var(--text-muted);
-            max-width: 260px;
+            max-width: 240px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        /* SVG Icons inside menu items */
+        .menu-item .item-icon {
+            width: 18px;
+            height: 18px;
+            color: rgba(255, 255, 255, 0.45);
+            transition: all 0.2s ease;
+        }
+
         /* Hover & Focus states */
         .menu-item.hovered {
-            background: var(--bg-item-hover);
-            border-color: rgba(var(--accent-color), 0.4);
+            background: rgba(var(--accent-color), 0.08);
+            border-color: rgba(var(--accent-color), 0.3);
             transform: translateX(4px);
-            box-shadow: 0 0 15px rgba(var(--accent-color), 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25), 
+                        inset 0 1px 0 rgba(var(--accent-color), 0.1);
+        }
+
+        .menu-item.hovered .title {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(var(--accent-color), 0.3);
+        }
+
+        .menu-item.hovered .item-icon {
+            color: rgb(var(--accent-color));
+            filter: drop-shadow(0 0 4px rgba(var(--accent-color), 0.5));
+            transform: scale(1.1);
         }
 
         .menu-item.hovered::before {
@@ -229,21 +257,44 @@
             height: 100%;
             width: 3px;
             background: rgb(var(--accent-color));
+            box-shadow: 0 0 8px rgb(var(--accent-color));
         }
 
-        /* Badges / Values on the right */
+        /* Badges / Values / Chevrons on the right */
         .menu-item .value-badge {
             font-size: 11px;
             font-weight: 700;
-            background: rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.04);
             padding: 3px 8px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.06);
             color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .menu-item .chevron {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .menu-item.hovered .chevron {
+            background: rgba(var(--accent-color), 0.15);
+            border-color: rgba(var(--accent-color), 0.4);
+            color: #ffffff;
+            box-shadow: 0 0 6px rgba(var(--accent-color), 0.25);
+            transform: translateX(2px);
         }
 
         .menu-item.hovered .value-badge {
-            background: rgba(var(--accent-color), 0.15);
+            background: rgba(var(--accent-color), 0.12);
             border-color: rgba(var(--accent-color), 0.3);
             color: rgb(var(--accent-color));
         }
@@ -345,12 +396,12 @@
         /* --- NOTIFICATION TOAST CONTAINER --- */
         #notification-container {
             position: absolute;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
             width: 320px;
             z-index: 9999;
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse;
             gap: 12px;
             pointer-events: none;
         }
@@ -488,9 +539,139 @@
     </div>
 
     <script>
-        // Store currently rendered elements
-        let currentItems = [];
+        // Default Mock Menu Data for Standalone Preview Mode
+        const defaultMenuData = [
+            {
+                label: "Self",
+                type: "subMenu",
+                categories: [
+                    { label: "Player", tabs: [
+                        { type: "button", label: "Revive", desc: "This will attempt to revive you by script." },
+                        { type: "checkbox", label: "Godmode", checked: false, desc: "Toggle invincibility." },
+                        { type: "button", label: "Suicide", desc: "Instantly kills your character." }
+                    ]},
+                    { label: "Movement", tabs: [
+                        { type: "checkbox", label: "Noclip", checked: false, desc: "Fly through objects." },
+                        { type: "checkbox", label: "Super Jump", checked: false, desc: "Jump extremely high." }
+                    ]},
+                    { label: "Toggles", tabs: [
+                        { type: "checkbox", label: "No Ragdoll", checked: false },
+                        { type: "checkbox", label: "Invisibility", checked: false }
+                    ]}
+                ]
+            },
+            {
+                label: "Server",
+                type: "subMenu",
+                categories: [
+                    { label: "List", tabs: [
+                        { type: "button", label: "Select Everyone" },
+                        { type: "button", label: "Clear Selection" }
+                    ]},
+                    { label: "Safe", tabs: [
+                        { type: "button", label: "Teleport to Player" }
+                    ]}
+                ]
+            },
+            {
+                label: "Visuals",
+                type: "subMenu",
+                categories: [
+                    { label: "ESP", tabs: [
+                        { type: "checkbox", label: "Player ESP", checked: false },
+                        { type: "checkbox", label: "Box ESP", checked: false }
+                    ]},
+                    { label: "Crosshair", tabs: [
+                        { type: "checkbox", label: "Draw Crosshair", checked: false }
+                    ]}
+                ]
+            },
+            {
+                label: "Weapon",
+                type: "subMenu",
+                categories: [
+                    { label: "Spawner", tabs: [
+                        { type: "button", label: "Spawn Weapon" }
+                    ]}
+                ]
+            },
+            {
+                label: "Vehicle",
+                type: "subMenu",
+                categories: [
+                    { label: "Spawner", tabs: [
+                        { type: "button", label: "Spawn Adder" },
+                        { type: "button", label: "Spawn Zentorno" }
+                    ]}
+                ]
+            },
+            {
+                label: "Protections",
+                type: "subMenu",
+                categories: [
+                    { label: "Anticheat", tabs: [
+                        { type: "checkbox", label: "Anticheat Blocker", checked: false }
+                    ]}
+                ]
+            },
+            {
+                label: "Scripts",
+                type: "subMenu",
+                categories: [
+                    { label: "Scripts", tabs: [
+                        { type: "button", label: "Search Resource" }
+                    ]}
+                ]
+            },
+            {
+                label: "Troll",
+                type: "subMenu",
+                categories: [
+                    { label: "Troll Menu", tabs: [
+                        { type: "button", label: "Crash Nearby Players" }
+                    ]}
+                ]
+            },
+            {
+                label: "Teleports",
+                type: "subMenu",
+                categories: [
+                    { label: "Teleport Menu", tabs: [
+                        { type: "button", label: "Teleport To Waypoint" }
+                    ]}
+                ]
+            },
+            {
+                label: "Misc",
+                type: "subMenu",
+                categories: [
+                    { label: "Game", tabs: [] },
+                    { label: "Config", tabs: [] }
+                ]
+            },
+            {
+                label: "Design",
+                type: "subMenu",
+                subTabs: [
+                    { type: "button", label: "Change Banner Color" }
+                ]
+            },
+            {
+                label: "Keybinds",
+                type: "subMenu",
+                subTabs: [
+                    { type: "button", label: "Menu Key" }
+                ]
+            }
+        ];
+
+        // Store state
+        let currentItems = defaultMenuData;
+        let menuStack = [];
+        let menuLabelStack = ["triggerderler"];
+        let hoveredIndex = 0;
         let accentRGB = "255, 0, 0";
+        let isFiveM = false;
 
         // DOM elements
         const menuContainer = document.getElementById('menu-container');
@@ -505,10 +686,30 @@
         const keybindOverlay = document.getElementById('keybind-overlay');
         const keybindsArea = document.getElementById('keybinds-area');
 
+        // Helper to retrieve vector icons for premium menu appearance
+        function getIconForLabel(label) {
+            const icons = {
+                "self": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+                "server": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>`,
+                "visuals": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+                "weapon": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>`,
+                "vehicle": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>`,
+                "protections": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+                "scripts": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+                "troll": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+                "teleports": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+                "misc": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+                "design": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.03345 19.1749 5.0999 19.4294 5.02452 19.6615C4.78363 20.4042 4.90828 21.2263 5.44845 21.7665C5.75338 22.0714 6.16709 22.1961 6.56522 22.1408C6.96335 22.0855 7.32356 21.854 7.57393 21.4925C8.36195 20.3548 9.59367 19.5 11 19.5H12V22Z"/><circle cx="7.5" cy="10.5" r="1.5"/><circle cx="11.5" cy="7.5" r="1.5"/><circle cx="16.5" cy="9.5" r="1.5"/><circle cx="15.5" cy="14.5" r="1.5"/></svg>`,
+                "keybinds": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="item-icon"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><rect x="6" y="8" width="12" height="8" rx="1"/></svg>`
+            };
+            return icons[label.toLowerCase()] || "";
+        }
+
         // Update elements in the menu area
         function updateElements(elements, pathStr, hoveredIdx) {
             menuItemsArea.innerHTML = '';
             currentItems = elements || [];
+            hoveredIndex = hoveredIdx || 0;
             
             if (pathStr) {
                 activeTabPath.innerText = pathStr;
@@ -524,7 +725,7 @@
                 }
 
                 const div = document.createElement('div');
-                div.className = `menu-item ${index === hoveredIdx ? 'hovered' : ''} ${item.checked ? 'checked' : ''}`;
+                div.className = `menu-item ${index === hoveredIndex ? 'hovered' : ''} ${item.checked ? 'checked' : ''}`;
                 
                 let badgeOrTypeHtml = '';
                 if (item.type === 'checkbox' || item.type === 'scrollable-checkbox' || item.type === 'slider-checkbox') {
@@ -532,16 +733,41 @@
                 } else if (item.value !== undefined) {
                     badgeOrTypeHtml = `<div class="value-badge">${item.value}</div>`;
                 } else if (item.type === 'subMenu') {
-                    badgeOrTypeHtml = `<div class="value-badge">&gt;&gt;</div>`;
+                    badgeOrTypeHtml = `
+                        <div class="chevron">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+                    `;
                 }
+
+                // Render vector icon if it exists for this tab
+                const iconHtml = getIconForLabel(item.label);
 
                 div.innerHTML = `
                     <div class="label-group">
-                        <div class="title">${item.label || ''}</div>
-                        ${item.desc ? `<div class="description">${item.desc}</div>` : ''}
+                        ${iconHtml}
+                        <div class="label-text-wrapper">
+                            <div class="title">${item.label || ''}</div>
+                            ${item.desc ? `<div class="description">${item.desc}</div>` : ''}
+                        </div>
                     </div>
                     ${badgeOrTypeHtml}
                 `;
+
+                // Mouse interaction for standalone mode
+                div.addEventListener('mouseenter', () => {
+                    if (isFiveM) return; // Disallow in-game to prevent mouse cursor conflict
+                    hoveredIndex = index;
+                    document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('hovered'));
+                    div.classList.add('hovered');
+                });
+
+                div.addEventListener('click', () => {
+                    if (isFiveM) return;
+                    selectItem(item, index);
+                });
 
                 menuItemsArea.appendChild(div);
             });
@@ -552,6 +778,65 @@
                 hoveredEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
         }
+
+        // Handle item selection in browser preview mode
+        function selectItem(item, index) {
+            if (item.type === 'subMenu' || item.categories || item.subTabs || item.tabs) {
+                menuStack.push([...currentItems]);
+                menuLabelStack.push(item.label);
+                
+                if (item.categories) {
+                    currentItems = item.categories;
+                } else if (item.subTabs) {
+                    currentItems = item.subTabs;
+                } else if (item.tabs) {
+                    currentItems = item.tabs;
+                } else {
+                    currentItems = [];
+                }
+                hoveredIndex = 0;
+                updateElements(currentItems, menuLabelStack.join(" > "), hoveredIndex);
+            } else if (item.type === 'checkbox') {
+                item.checked = !item.checked;
+                updateElements(currentItems, menuLabelStack.join(" > "), hoveredIndex);
+                addNotification("info", item.label, item.checked ? "Aktif Edildi" : "Pasif Edildi", 2000);
+            } else if (item.type === 'button') {
+                addNotification("success", item.label, "İşlem başarıyla çalıştırıldı!", 2500);
+            }
+        }
+
+        // Handle back navigation in browser preview mode
+        function goBack() {
+            if (menuStack.length > 0) {
+                currentItems = menuStack.pop();
+                menuLabelStack.pop();
+                hoveredIndex = 0;
+                updateElements(currentItems, menuLabelStack.join(" > "), hoveredIndex);
+            }
+        }
+
+        // Browser Keyboard Listener for Standalone Preview Mode
+        window.addEventListener('keydown', function(e) {
+            if (isFiveM) return; // Ignore if loaded in game (FiveM Lua handles keypresses)
+
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                hoveredIndex = (hoveredIndex - 1 + currentItems.length) % currentItems.length;
+                updateElements(currentItems, menuLabelStack.join(" > "), hoveredIndex);
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                hoveredIndex = (hoveredIndex + 1) % currentItems.length;
+                updateElements(currentItems, menuLabelStack.join(" > "), hoveredIndex);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentItems[hoveredIndex]) {
+                    selectItem(currentItems[hoveredIndex], hoveredIndex);
+                }
+            } else if (e.key === 'Backspace') {
+                e.preventDefault();
+                goBack();
+            }
+        });
 
         // Add dynamically animated notification toast
         function addNotification(type, title, desc, duration) {
@@ -632,6 +917,9 @@
             }
         }
 
+        // Populate initial elements for standalone mode
+        updateElements(currentItems, menuLabelStack.join(" > "), hoveredIndex);
+
         // Listen for messages from DUI/Lua SendMessage
         window.addEventListener('message', function(event) {
             const data = event.data;
@@ -645,6 +933,7 @@
                     menuContainer.classList.remove('active');
                     break;
                 case 'updateElements':
+                    isFiveM = true; // Switched to game mode, disables standalone mouse click event conflicts
                     updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
                     break;
                 case 'showNotification':
