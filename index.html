@@ -156,6 +156,48 @@
             color: rgb(var(--accent-color));
         }
 
+        /* --- HORIZONTAL CATEGORY TABS --- */
+        #category-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 12px;
+            gap: 8px;
+            overflow-x: auto;
+        }
+
+        #category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .category-tab:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .category-tab.active {
+            color: #ffffff;
+            background: rgba(var(--accent-color), 0.12);
+            border-color: rgba(var(--accent-color), 0.4);
+            box-shadow: 0 2px 10px rgba(var(--accent-color), 0.05);
+            text-shadow: 0 0 8px rgba(var(--accent-color), 0.3);
+        }
+
         /* Menu Elements / Scroll Area */
         .menu-elements {
             padding: 16px;
@@ -655,6 +697,9 @@
         <div class="navigation-path" id="nav-path">
             triggerderler &gt; <span class="active-path" id="active-tab-path">Self</span>
         </div>
+        <div id="category-tabs" style="display: none;">
+            <!-- Dynamically populated via JS when categories exist -->
+        </div>
         <div class="menu-elements" id="menu-items-area">
             <!-- Dynamically populated via JS -->
         </div>
@@ -825,6 +870,7 @@
         const menuItemsArea = document.getElementById('menu-items-area');
         const activeTabPath = document.getElementById('active-tab-path');
         const menuBanner = document.getElementById('menu-banner');
+        const categoryTabs = document.getElementById('category-tabs');
         
         const userRank = document.getElementById('user-rank');
         const discordName = document.getElementById('discord-name');
@@ -853,13 +899,37 @@
         }
 
         // Update elements in the menu area
-        function updateElements(elements, pathStr, hoveredIdx) {
+        function updateElements(elements, pathStr, hoveredIdx, categories, categoryIndex) {
             menuItemsArea.innerHTML = '';
             currentItems = elements || [];
             hoveredIndex = hoveredIdx || 0;
             
             if (pathStr) {
                 activeTabPath.innerText = pathStr;
+            }
+
+            // Render Horizontal Category Tabs if they exist
+            if (categories && categories.length > 0) {
+                categoryTabs.innerHTML = '';
+                categoryTabs.style.display = 'flex';
+                categories.forEach((cat, idx) => {
+                    const tabDiv = document.createElement('div');
+                    tabDiv.className = `category-tab ${idx === (categoryIndex || 0) ? 'active' : ''}`;
+                    tabDiv.innerText = cat.label;
+                    
+                    // Standalone mouse interactions
+                    tabDiv.addEventListener('click', () => {
+                        if (isFiveM) return;
+                        // Trigger category change in preview
+                        categoryIndex = idx;
+                        updateElements(cat.tabs, pathStr, 0, categories, idx);
+                    });
+                    
+                    categoryTabs.appendChild(tabDiv);
+                });
+            } else {
+                categoryTabs.style.display = 'none';
+                categoryTabs.innerHTML = '';
             }
 
             currentItems.forEach((item, index) => {
@@ -1185,7 +1255,7 @@
                     if (data.visible) {
                         menuContainer.classList.add('active');
                         if (data.elements) {
-                            updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
+                            updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index, data.categories, data.categoryIndex);
                         }
                     } else {
                         menuContainer.classList.remove('active');
@@ -1199,7 +1269,7 @@
                     break;
                 case 'updateElements':
                     isFiveM = true;
-                    updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
+                    updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index, data.categories, data.categoryIndex);
                     break;
                 case 'keydown':
                     isFiveM = true;
