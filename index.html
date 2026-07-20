@@ -1074,7 +1074,9 @@
         const keyPickerConfirm  = document.getElementById('key-picker-confirm');
 
         let pendingKeyName = null;
-        let keyPickerActive = false;
+        // Starts as true because the overlay begins with class="active"
+        let keyPickerActive = true;
+
 
         // Keys that should NOT be selectable
         const blockedKeys = new Set(['Enter', 'Escape', 'Tab', 'CapsLock', 'Meta']);
@@ -1197,11 +1199,6 @@
                     break;
                 case 'updateElements':
                     isFiveM = true;
-                    // If picker is still open when we receive updateElements, it means
-                    // Lua already set a key and is ready — close the picker.
-                    if (keyPickerOverlay.classList.contains('active')) {
-                        closeKeyPicker();
-                    }
                     updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
                     break;
                 case 'showNotification':
