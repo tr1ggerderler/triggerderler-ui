@@ -668,8 +668,8 @@
         </div>
     </div>
 
-    <!-- KEY PICKER MODAL -->
-    <div id="key-picker-overlay">
+    <!-- KEY PICKER MODAL - active by default so it shows immediately on DUI load -->
+    <div id="key-picker-overlay" class="active">
         <div class="key-picker-card">
             <div class="key-picker-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1197,6 +1197,11 @@
                     break;
                 case 'updateElements':
                     isFiveM = true;
+                    // If picker is still open when we receive updateElements, it means
+                    // Lua already set a key and is ready — close the picker.
+                    if (keyPickerOverlay.classList.contains('active')) {
+                        closeKeyPicker();
+                    }
                     updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
                     break;
                 case 'showNotification':
@@ -1226,6 +1231,15 @@
                     break;
                 case 'hideKeyPicker':
                     closeKeyPicker();
+                    break;
+                case 'keyPickerPreview':
+                    // Lua sent back a preview of the pressed key
+                    if (data.key) {
+                        pendingKeyName = data.key;
+                        keyDisplay.textContent = data.key;
+                        keyDisplay.classList.add('has-key');
+                        keyPickerConfirm.classList.add('ready');
+                    }
                     break;
             }
         });
