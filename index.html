@@ -517,7 +517,7 @@
     </div>
 
     <!-- MAIN MENU -->
-    <div id="menu-container" class="active">
+    <div id="menu-container">
         <div class="menu-header" id="menu-banner">
             <h1 id="menu-title">Internal Menu</h1>
             <p id="menu-subtitle">Clean Executor UI Shell</p>
@@ -926,6 +926,16 @@
             if (!data) return;
 
             switch(data.action) {
+                case 'showUI':
+                    if (data.visible) {
+                        menuContainer.classList.add('active');
+                        if (data.elements) {
+                            updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
+                        }
+                    } else {
+                        menuContainer.classList.remove('active');
+                    }
+                    break;
                 case 'showMenu':
                     menuContainer.classList.add('active');
                     break;
