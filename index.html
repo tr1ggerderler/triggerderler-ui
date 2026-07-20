@@ -1201,6 +1201,19 @@
                     isFiveM = true;
                     updateElements(data.elements, data.path ? data.path.join(' > ') : '', data.index);
                     break;
+                case 'keydown':
+                    isFiveM = true;
+                    hoveredIndex = data.index;
+                    // Redraw or update the active hovered class on DOM elements
+                    document.querySelectorAll('.menu-item').forEach((el, index) => {
+                        if (index === hoveredIndex) {
+                            el.classList.add('hovered');
+                            el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        } else {
+                            el.classList.remove('hovered');
+                        }
+                    });
+                    break;
                 case 'showNotification':
                     addNotification(data.type, data.title, data.desc, data.duration);
                     break;
